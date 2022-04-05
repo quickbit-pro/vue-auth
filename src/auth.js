@@ -7,7 +7,7 @@ var __auth = null;
 var __defaultOptions = {
 
     // Variables
-
+    cookiePrefix: '',
     rolesKey:            'roles',
     rememberKey:         'auth_remember',
     staySignedInKey:     'auth_stay_signed_in',
@@ -174,12 +174,12 @@ function _parseRequestIntercept(req) {
     }
 
     token = __token.get.call(__auth, tokenName);
-    token = __token.get.call(__auth, tokenName);
-    refreshToken=__token.get.call(__auth, 'refresh-token');
-    apiToken=__token.get.call(__auth, 'basic-auth-token');
-    refreshUrl=__token.get.call(__auth, 'refresh-url');
-    merchantUrl=__token.get.call(__auth, 'merchant-url');
-    merchantData=__token.get.call(__auth, 'merchant-data-select');
+
+    refreshToken=__token.get.call(__auth, __auth.options.cookiePrefix +'refresh-token');
+    apiToken=__token.get.call(__auth, __auth.options.cookiePrefix +'basic-auth-token');
+    refreshUrl=__token.get.call(__auth, __auth.options.cookiePrefix +'refresh-url');
+    merchantUrl=__token.get.call(__auth, __auth.options.cookiePrefix +'merchant-url');
+    merchantData=__token.get.call(__auth, __auth.options.cookiePrefix +'merchant-data-select');
     if (token) {
         __auth.drivers.auth.request.call(__auth, req, token, refreshToken, apiToken, refreshUrl,merchantData,merchantUrl);
     }
@@ -194,7 +194,7 @@ function _parseResponseIntercept(res, req) {
         return;
     }
 
-    _processInvalidToken(res, __auth.transitionThis);
+    //_processInvalidToken(res, __auth.transitionThis);
 
     token = __auth.drivers.auth.response.call(__auth, res);
 
@@ -341,7 +341,7 @@ function _processLogout(redirect) {
     __token.remove.call(__auth, __auth.options.tokenDefaultKey);
 
     __token.remove.call(__auth, __auth.options.staySignedInKey);
-
+    __token.remove.call(__auth, __auth.options.cookiePrefix + 'refresh-token');
     __auth.$vm.state.loaded = true;
     __auth.$vm.state.authenticated = false;
     __auth.$vm.state.data = null;

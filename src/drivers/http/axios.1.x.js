@@ -37,8 +37,10 @@ export default {
     },
 
     invalidToken: function (res) {
-        if (res.status === 401) {
-            return true;
+        if(res !== undefined) {
+            if (res.status === 401) {
+                return true;
+            }
         }
     },
 
@@ -52,7 +54,9 @@ export default {
     },
 
     getHeaders: function (res) {
-        return res.headers;
+        if(res !== undefined) {
+            return res.headers;
+        }
     },
 
     setHeaders: function (req, headers) {
