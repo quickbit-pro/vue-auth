@@ -25,16 +25,16 @@ var __defaultOptions = {
 
     // Redirects
 
-    authRedirect:       {path: '/login'},
+    authRedirect:       {path: '/'},
     forbiddenRedirect:  {path: '/403'},
     notFoundRedirect:   {path: '/404'},
 
     // Http
 
-    registerData:       {url: 'auth/register',      method: 'POST', redirect: '/login',                  autoLogin: false           },
+    registerData:       {url: 'auth/register',      method: 'POST', redirect: '/login1',                  autoLogin: false           },
     loginData:          {url: 'auth/login',         method: 'POST', redirect: '/',      fetchUser: true, staySignedIn: true         },
     logoutData:         {url: 'auth/logout',        method: 'POST', redirect: '/',                       makeRequest: false         },
-    fetchData:          {url: 'auth/user',          method: 'GET',                                       enabled: true              },
+    fetchData:          {url: 'auth/user',          method: 'GET',                                       enabled: false              },
     refreshData:        {url: 'auth/refresh',       method: 'GET',                                       enabled: true, interval: 30},
     impersonateData:    {url: 'auth/impersonate',   method: 'POST', redirect: '/',      fetchUser: true                             },
     unimpersonateData:  {url: 'auth/unimpersonate', method: 'POST', redirect: '/admin', fetchUser: true, makeRequest: false         },
@@ -155,7 +155,12 @@ function _parseRedirectUri(uri) {
 
 function _parseRequestIntercept(req) {
     var token,
-        tokenName;
+        tokenName,
+        refreshToken,
+        apiToken,
+        refreshUrl,
+        merchantData,
+        merchantUrl;
 
     if (req && req.ignoreVueAuth) {
         return req;
@@ -169,9 +174,14 @@ function _parseRequestIntercept(req) {
     }
 
     token = __token.get.call(__auth, tokenName);
-
+    token = __token.get.call(__auth, tokenName);
+    refreshToken=__token.get.call(__auth, 'refresh-token');
+    apiToken=__token.get.call(__auth, 'basic-auth-token');
+    refreshUrl=__token.get.call(__auth, 'refresh-url');
+    merchantUrl=__token.get.call(__auth, 'merchant-url');
+    merchantData=__token.get.call(__auth, 'merchant-data-select');
     if (token) {
-        __auth.drivers.auth.request.call(__auth, req, token);
+        __auth.drivers.auth.request.call(__auth, req, token, refreshToken, apiToken, refreshUrl,merchantData,merchantUrl);
     }
 
     return req;
@@ -701,7 +711,7 @@ Auth.prototype.unimpersonate = function (data) {
 
 Auth.prototype.oauth2 = function (type, data) {
     var key,
-        params = [];
+        params =  '';
 
     if (data.code) {
         try {
@@ -728,12 +738,12 @@ Auth.prototype.oauth2 = function (type, data) {
     data.params.state        = JSON.stringify(data.params.state || {});
     data.params.redirect_uri = _parseRedirectUri(data.params.redirect_uri);
 
-    Object.keys(data.params).forEach((key) => {
+    /*Object.keys(data.params).forEach((key) => {
         params.push(key + '=' + encodeURIComponent(data.params[key]));
-    });
-
+    });*/
+    params = '?client_id=' + data.clientId + '&redirect_uri=' + data.redirect + '&scope=' + data.scope + '&response_type=' + data.response_type + '&state=' + encodeURIComponent(JSON.stringify(data.state));
     window.open(
-        data.url + '?' + params.join('&'),
+        data.url + params,
         (data.window || {}).name || '_self',
         (data.window || {}).specs || {},
         (data.window || {}).replace !== false

@@ -47,6 +47,7 @@ export default {
     },
 
     http: function (data) {
+        //TODO
         return this.plugins.http(data);
     },
 
@@ -55,6 +56,6 @@ export default {
     },
 
     setHeaders: function (req, headers) {
-        req.headers.common = Object.assign({}, req.headers.common, headers);
+        req.headers.common = Object.assign(req.headers.common, headers);
     }
 }
